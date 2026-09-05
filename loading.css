@@ -1,0 +1,397 @@
+/* ═══════════════════════════════════════════════════════════════
+   Palette follows the GradientWaves props in loading.js:
+     horizonColor #fbfbfb · waveColor #0f0e0f · crestColor #ffffff
+
+   LAYERS
+     #bg      z0   — the WebGL waves. Persistent: it is the page
+                     background before, during and after loading.
+     #stage   z10  — the revealed content.
+     #loader  z100 — the HUD overlay, faded out on completion.
+
+   Because the background runs bright at the horizon and near-black
+   in the water, neither foreground layer can commit to one ink.
+   Both are drawn in white and composited with mix-blend-mode:
+   difference, resolving to near-black over the sky and near-white
+   over the water.
+
+   The blend sits on #stage and #loader themselves, NOT on their
+   children: each is its own stacking context, so a child would
+   blend against its transparent parent instead of reaching the
+   canvas. Every colour below is therefore a pre-difference value.
+   ═══════════════════════════════════════════════════════════════ */
+
+:root{
+  --horizon:   #fbfbfb;
+  --wave:      #0f0e0f;
+  --crest:     #ffffff;
+
+  --ink:       #ffffff;
+  --stage-ink: #0c0c0d;
+  --halo:      0 0 38px rgba(255,255,255,.78), 0 0 9px rgba(255,255,255,.55);
+  --ink-dim:   rgba(255,255,255,.62);
+  --ink-faint: rgba(255,255,255,.34);
+  --line:      rgba(255,255,255,.30);
+
+  --mono: 'JetBrains Mono', ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
+  --sans: 'Space Grotesk', 'Helvetica Neue', Helvetica, Arial, sans-serif;
+
+  --gutter: clamp(18px, 3.4vw, 46px);
+  --micro: clamp(9px, .72vw, 10.5px);
+}
+
+*{ margin:0; padding:0; box-sizing:border-box; }
+
+html, body{
+  width:100%; height:100%;
+  background: var(--wave);
+  color: var(--ink);
+  font-family: var(--sans);
+  overflow:hidden;
+  -webkit-font-smoothing:antialiased;
+  -moz-osx-font-smoothing:grayscale;
+}
+
+/* ─────────────────────────────────────────────
+   BACKGROUND — persistent
+   ───────────────────────────────────────────── */
+#bg{ position:fixed; inset:0; z-index:0; }
+
+#gl{ position:absolute; inset:0; display:block; width:100%; height:100%; }
+
+/* Painted under the canvas — and the entire visual if WebGL is
+   unavailable: pale horizon above, deep water below. */
+#field{
+  position:absolute; inset:0;
+  background:
+    linear-gradient(180deg,
+      #e4e4e6 0%,
+      #fbfbfb 22%,
+      #f2f2f3 30%,
+      #b9b8bb 46%,
+      #545356 66%,
+      #1d1c1e 84%,
+      #0f0e0f 100%);
+}
+
+/* ─────────────────────────────────────────────
+   NAVIGATION
+   ─────────────────────────────────────────────
+   Takes the same ink treatment as the stage rather than difference
+   blending: it sits along the top edge, which is the brightest part
+   of the sky, so dark ink on a light halo is what stays legible
+   there. Enters with body.is-revealed, staggered left to right. */
+#nav{
+  position:fixed;
+  top:0; left:0; right:0;
+  z-index:20;
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  gap: clamp(28px, 4.4vw, 58px);
+  padding: clamp(22px, 3vw, 40px) var(--gutter);
+  pointer-events:none;
+}
+
+#nav a{
+  position:relative;
+  font-family: var(--sans);
+  font-size: clamp(11px, .92vw, 13px);
+  font-weight:600;
+  letter-spacing:.16em;
+  text-transform:uppercase;
+  color: var(--stage-ink);
+  text-shadow: var(--halo);
+  text-decoration:none;
+  white-space:nowrap;
+  padding:.4em .1em;
+
+  opacity:0;
+  transform: translateY(-10px);
+  pointer-events:none;
+
+  /* Entrance only. Hover lives on ::after, so nothing here needs a
+     second, undelayed transition competing with the stagger. */
+  transition: opacity   1.2s cubic-bezier(.16,1,.3,1) var(--d, 0s),
+              transform 1.3s cubic-bezier(.16,1,.3,1) var(--d, 0s);
+}
+#nav a:nth-child(1){ --d:.30s }
+#nav a:nth-child(2){ --d:.38s }
+#nav a:nth-child(3){ --d:.46s }
+
+body.is-revealed #nav a{
+  opacity:1;
+  transform:none;
+  pointer-events:auto;
+}
+
+/* hairline that draws in from the left on hover */
+#nav a::after{
+  content:'';
+  position:absolute;
+  left:.1em; right:.1em; bottom:.15em;
+  height:1px;
+  background: currentColor;
+  box-shadow: 0 0 7px 2px rgba(255,255,255,.85);
+  transform: scaleX(0);
+  transform-origin:0 50%;
+  transition: transform .55s cubic-bezier(.16,1,.3,1);
+}
+#nav a:hover::after,
+#nav a:focus-visible::after{ transform: scaleX(1); }
+
+#nav a:focus-visible{
+  outline:1px solid var(--stage-ink);
+  outline-offset:4px;
+}
+
+@media (max-width: 620px){
+  #nav{ gap: 22px; }
+  #nav a{ font-size:11px; letter-spacing:.12em; }
+}
+
+/* ─────────────────────────────────────────────
+   REVEALED STAGE
+   ───────────────────────────────────────────── */
+/* The stage does NOT use difference blending, unlike the HUD above it.
+   The knot puts broad mid-greys behind the wordmark, and white text
+   differenced against a mid-grey resolves to that same mid-grey and
+   disappears. A fixed dark ink lifted by a soft light halo instead
+   reads over the sky, the water and both faces of the knot. */
+#stage{
+  position:fixed; inset:0;
+  z-index:10;
+  display:flex; flex-direction:column;
+  align-items:center; justify-content:center;
+  gap: clamp(14px, 2vh, 26px);
+  pointer-events:none;
+}
+#stage > *{
+  opacity:0;
+  transform: translateY(16px);
+  transition: opacity 1.5s cubic-bezier(.16,1,.3,1),
+              transform 1.7s cubic-bezier(.16,1,.3,1);
+}
+#stage .mark{
+  font-size: clamp(2rem, 7vw, 5rem);
+  font-weight:400;
+  letter-spacing:-.03em;
+  color: var(--stage-ink);
+  text-shadow: var(--halo);
+  transition-delay:.25s;
+}
+#stage .rule{
+  display:block;
+  width: clamp(46px, 7vw, 92px);
+  height:1px;
+  background:#000;
+  box-shadow: 0 0 10px 3px #fff, 0 0 20px 6px rgba(255,255,255,.8);
+  transition-delay:.40s;
+}
+/* Deliberately heavier and a step larger than the HUD's --micro. At 9px
+   and weight 500 almost no pixel of this face reaches full coverage, so
+   the background and the halo both bleed through and grey the strokes;
+   the extra weight and size give the ink something solid to sit on. */
+#stage .mark-sub{
+  font-family: var(--mono);
+  font-size: clamp(11px, .92vw, 13px);
+  font-weight:700;
+  letter-spacing:.34em;
+  text-transform:uppercase;
+  color:#000;
+  /* Repeating a shadow compounds its alpha, so these stack into an
+     opaque white plate rather than the wash a single blur gives. The
+     line therefore carries its own background and stays readable over
+     the knot's black lobes, not just over its white ones. */
+  text-shadow:
+    0 0 6px #fff, 0 0 6px #fff, 0 0 6px #fff,
+    0 0 14px #fff, 0 0 14px #fff,
+    0 0 26px rgba(255,255,255,.85);
+  text-indent:.34em;
+  transition-delay:.52s;
+}
+body.is-revealed #stage > *{ opacity:1; transform:none; }
+
+/* ─────────────────────────────────────────────
+   LOADER OVERLAY
+   ───────────────────────────────────────────── */
+#loader{
+  position:fixed; inset:0;
+  z-index:100;
+  opacity:1;
+  mix-blend-mode: difference;
+  transition: opacity 1.05s cubic-bezier(.4,0,.2,1) .18s;
+}
+body.is-complete #loader{ opacity:0; }
+body.is-revealed  #loader{ pointer-events:none; visibility:hidden; }
+
+/* ─────────────────────────────────────────────
+   HUD
+   ───────────────────────────────────────────── */
+.hud{
+  position:absolute; inset:0;
+  padding: var(--gutter);
+  padding-bottom: calc(var(--gutter) + env(safe-area-inset-bottom));
+  display:grid;
+  grid-template-columns: 1fr auto;
+  grid-template-rows: auto 1fr auto;
+  pointer-events:none;
+}
+
+.micro{
+  font-family: var(--mono);
+  font-size: var(--micro);
+  font-weight:400;
+  letter-spacing:.30em;
+  text-transform:uppercase;
+  color: var(--ink-dim);
+  line-height:1.9;
+  white-space:nowrap;
+}
+.micro .dim{ color: var(--ink-faint); }
+
+/* staggered entrance */
+.rise{
+  opacity:0;
+  transform: translateY(9px);
+  animation: rise 1.5s cubic-bezier(.16,1,.3,1) forwards;
+}
+.rise.d1{ animation-delay:.10s } .rise.d2{ animation-delay:.20s }
+.rise.d3{ animation-delay:.30s } .rise.d4{ animation-delay:.40s }
+.rise.d5{ animation-delay:.55s }
+@keyframes rise{ to{ opacity:1; transform:none; } }
+
+/* corners */
+.tl{ grid-area:1/1; align-self:start; justify-self:start; }
+.tr{ grid-area:1/2; align-self:start; justify-self:end; text-align:right; }
+.bl{ grid-area:3/1; align-self:end;   justify-self:start; }
+.br{ grid-area:3/2; align-self:end;   justify-self:end; text-align:right; }
+
+.wordmark{
+  font-family: var(--sans);
+  font-size: clamp(11px, 1vw, 13px);
+  font-weight:500;
+  letter-spacing:.34em;
+  text-transform:uppercase;
+  color: var(--ink);
+  display:flex; align-items:center; gap:.75em;
+}
+.pip{
+  width:5px; height:5px; border-radius:50%;
+  background: var(--crest);
+  animation: pulse 2.4s ease-in-out infinite;
+  flex:none;
+}
+@keyframes pulse{ 0%,100%{ opacity:1; transform:scale(1) } 50%{ opacity:.35; transform:scale(.72) } }
+
+/* ── centre readout ── */
+.core{
+  grid-area:2/1/3/3;
+  display:flex; flex-direction:column;
+  align-items:center; justify-content:center;
+  gap: clamp(10px, 1.4vh, 18px);
+  transition: opacity .8s cubic-bezier(.4,0,.2,1),
+              transform 1.1s cubic-bezier(.7,0,.3,1),
+              filter .9s cubic-bezier(.4,0,.2,1);
+}
+body.is-complete .core{
+  opacity:0;
+  transform: translateY(-16px) scale(1.035);
+  filter: blur(9px);
+}
+
+.core-label{
+  font-family: var(--mono);
+  font-size: var(--micro);
+  letter-spacing:.42em;
+  text-transform:uppercase;
+  color: var(--ink-faint);
+  text-indent:.42em;
+}
+
+.count{
+  display:flex; align-items:flex-start; gap:.14em;
+  font-weight:400;
+  letter-spacing:-.045em;
+  font-variant-numeric: tabular-nums;
+  font-feature-settings:'tnum' 1;
+  line-height:.86;
+}
+/* Solid, not a gradient — difference blending needs a flat source
+   value to invert cleanly against the moving background. */
+.count .n{
+  font-size: clamp(3.4rem, 11.5vw, 8.6rem);
+  color: var(--crest);
+}
+.count .pct{
+  font-family: var(--mono);
+  font-size: clamp(.6rem, 1.15vw, .8rem);
+  letter-spacing:.12em;
+  color: var(--ink-faint);
+  margin-top:.55em;
+}
+
+.status{
+  font-family: var(--mono);
+  font-size: var(--micro);
+  letter-spacing:.30em;
+  text-transform:uppercase;
+  color: var(--ink-dim);
+  min-height:1.4em;
+  display:flex; align-items:center; gap:.7em;
+  text-indent:.30em;
+}
+.status .caret{
+  width:5px; height:9px;
+  background: var(--crest);
+  opacity:.85;
+  animation: blink 1.05s steps(1,end) infinite;
+  flex:none;
+}
+@keyframes blink{ 0%,49%{opacity:.85} 50%,100%{opacity:0} }
+
+/* status text swap */
+.status .txt{
+  transition: opacity .34s ease, transform .34s cubic-bezier(.16,1,.3,1);
+}
+.status.swapping .txt{ opacity:0; transform: translateY(-5px); }
+
+/* ── bottom hairline ── */
+.rail{
+  position:absolute; left:0; right:0; bottom:0;
+  height:1px;
+  background: rgba(255,255,255,.16);
+  overflow:hidden;
+}
+.rail i{
+  display:block; height:100%;
+  width:100%;
+  transform-origin:0 50%;
+  transform: scaleX(0);
+  background: var(--crest);
+}
+body.is-complete .rail{ opacity:0; transition: opacity .5s ease; }
+
+/* corner ticks — quiet structural framing */
+.tick{
+  position:absolute; width:9px; height:9px;
+  border:1px solid var(--line);
+  opacity:0;
+  animation: rise 1.4s cubic-bezier(.16,1,.3,1) .5s forwards;
+}
+.tick.a{ top:calc(var(--gutter) - 14px);    left:calc(var(--gutter) - 14px);  border-right:0; border-bottom:0 }
+.tick.b{ top:calc(var(--gutter) - 14px);    right:calc(var(--gutter) - 14px); border-left:0;  border-bottom:0 }
+.tick.c{ bottom:calc(var(--gutter) - 14px); left:calc(var(--gutter) - 14px);  border-right:0; border-top:0 }
+.tick.d{ bottom:calc(var(--gutter) - 14px); right:calc(var(--gutter) - 14px); border-left:0;  border-top:0 }
+
+@media (max-width: 620px){
+  :root{ --gutter: 20px; }
+  .tr, .br{ display:none; }
+}
+
+@media (prefers-reduced-motion: reduce){
+  .rise, .tick{ animation-duration:.01ms; animation-delay:0s; opacity:1; transform:none; }
+  .pip, .status .caret{ animation:none; }
+  .core, #stage > *, #nav a{ transition-duration:.2s; transition-delay:0s; }
+  #nav a::after{ transition-duration:.01ms; }
+  body.is-complete .core{ filter:none; transform:none; }
+}

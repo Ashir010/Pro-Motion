@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0,viewport-fit=cover"/>
+<title>Pro-Motion</title>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=JetBrains+Mono:wght@300;400;500;700&display=swap" rel="stylesheet">
+
+<link rel="stylesheet" href="loading.css">
+</head>
+<body>
+
+<!-- ══ persistent background ═════════════════════════════════════
+     Lives outside #loader so the waves survive the reveal and
+     become the page background rather than fading out with it.
+     ══════════════════════════════════════════════════════════════ -->
+<div id="bg">
+  <div id="field"></div>
+  <canvas id="gl"></canvas>
+</div>
+
+<!-- ══ navigation ════════════════════════════════════════════════
+     Its own layer rather than part of #stage: the stage is a centred
+     flex column, and the nav has to hold the top edge. Reveals on the
+     same body.is-revealed flag.
+     ══════════════════════════════════════════════════════════════ -->
+<nav id="nav" aria-label="Primary">
+  <a href="#work">Work</a>
+  <a href="#about">About</a>
+  <a href="#contact">Contact</a>
+</nav>
+
+<!-- ══ what the loader reveals ═══════════════════════════════════ -->
+<main id="stage">
+  <div class="mark">Pro&#8202;&mdash;&#8202;Motion</div>
+  <span class="rule"></span>
+  <div class="mark-sub">Real&nbsp;&mdash;&nbsp;Time&nbsp;Rendering</div>
+</main>
+
+<!-- ══ loader ════════════════════════════════════════════════════ -->
+<div id="loader" role="progressbar" aria-label="Loading" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0">
+  <div class="hud">
+    <span class="tick a"></span><span class="tick b"></span>
+    <span class="tick c"></span><span class="tick d"></span>
+
+    <div class="tl">
+      <div class="wordmark rise d1"><i class="pip"></i>Pro&#8202;&mdash;&#8202;Motion</div>
+      <div class="micro rise d2" style="margin-top:.55em">Real&nbsp;&mdash;&nbsp;Time&nbsp;Rendering</div>
+    </div>
+
+    <div class="tr micro rise d2">
+      Renderer <span class="dim">/</span> <span id="rendererName">WebGL</span><br/>
+      <span class="dim">Session 001 &mdash; 2026</span>
+    </div>
+
+    <div class="core">
+      <div class="core-label rise d3">Initialising</div>
+      <div class="count rise d3">
+        <span class="n" id="num">000</span><span class="pct">%</span>
+      </div>
+      <div class="status rise d4"><i class="caret"></i><span class="txt" id="statusTxt">Establishing context</span></div>
+    </div>
+
+    <div class="bl micro rise d5">
+      <span class="dim">Buffer</span> <span id="assetCount">000</span> <span class="dim">/ 128</span>
+    </div>
+
+    <div class="br micro rise d5">
+      34.05&deg;&nbsp;N <span class="dim">&mdash;</span> 118.24&deg;&nbsp;W
+    </div>
+  </div>
+
+  <div class="rail"><i id="rail"></i></div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script src="loading.js"></script>
+</body>
+</html>
