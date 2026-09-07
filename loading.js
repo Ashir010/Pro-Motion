@@ -75,8 +75,10 @@
 
     /* Glass, not a solid: the body lets the water through at this alpha
        while the silhouette and the highlights stay opaque, which is how
-       a real transparent object holds its shape. */
-    opacity:    0.34
+       a real transparent object holds its shape. Thin enough that the
+       waves read continuously through the flat faces — the object should
+       sit in the water, not on top of it. */
+    opacity:    0.22
   };
 
   /* ═══════════════════════════════════════════════════════════════
@@ -482,7 +484,7 @@
        through them. */
     '  float ink = 1.0 - clamp(col.g, 0.0, 1.0);',
     '  float a = uAlpha + (1.0 - uAlpha) *',
-    '            clamp(fres * 1.45 + spec * 1.6 + ink * 0.45, 0.0, 1.0);',
+    '            clamp(fres * 1.45 + spec * 1.6 + ink * 0.28, 0.0, 1.0);',
 
     // Never fully black: it has to stay legible over the dark water.
     '  gl_FragColor = vec4(clamp(col, 0.035, 1.0), clamp(a, 0.0, 1.0));',

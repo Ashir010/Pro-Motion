@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0,viewport-fit=cover"/>
+<title>Contact &mdash; Pro-Motion</title>
+<meta name="description" content="Send Pro-Motion a brief. A real-time rendering studio in New Delhi."/>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=JetBrains+Mono:wght@300;400;500;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="contact.css">
+</head>
+<body>
+
+<!-- The still ground carried over from about.css: one fixed wash the
+     page scrolls across, so the loader, About and Contact all sit on
+     the same water. -->
+<div id="ground" aria-hidden="true"></div>
+
+<nav id="nav" aria-label="Primary">
+  <a class="brand" href="loading.html"><i class="pip"></i>Pro&#8202;&mdash;&#8202;Motion</a>
+  <div class="links">
+    <a href="loading.html#work">Work</a>
+    <a href="about.html">About</a>
+    <a href="contact.html" aria-current="page">Contact</a>
+  </div>
+</nav>
+
+<main>
+
+  <!-- ══ masthead ════════════════════════════════════════════════ -->
+  <header id="masthead" class="wrap">
+    <h1 class="rise">Send the brief.<br/><em>We&rsquo;ll send back a frame.</em></h1>
+    <p class="lede rise d1">
+      Every project here starts the same way: you describe the thing you
+      can&rsquo;t quite picture yet, and we build enough of it to look at.
+      Fill in what you know. The blanks are fine &mdash; that&rsquo;s usually
+      what the first call is for.
+    </p>
+  </header>
+
+  <!-- ══ intake ══════════════════════════════════════════════════
+       Left is the form. Right is the same data read back as a studio
+       intake sheet, composed live, under the loader's own progress
+       rail. The sheet is the reason this page is not a form on a page.
+       ════════════════════════════════════════════════════════════ -->
+  <section id="intake" class="wrap" aria-labelledby="intake-h">
+
+    <div class="section-head rise">
+      <span class="micro" id="intake-h">The Brief</span>
+      <span class="micro"><span class="dim">Reply within</span> two working days</span>
+    </div>
+
+    <div class="grid">
+
+      <!-- ── working surface ───────────────────────────────────── -->
+      <div class="formcol rise d1">
+
+        <!-- Focus lands here after a failed submit; every item links to
+             the field that raised it, and the inline errors stay put. -->
+        <div class="summary" id="errSummary" role="alert" tabindex="-1" hidden>
+          <p class="summary-h" id="summaryH">Some fields still need you</p>
+          <ul id="summaryList"></ul>
+        </div>
+
+        <form id="briefForm" novalidate autocomplete="on">
+
+          <div class="row">
+            <div class="field">
+              <label for="f-name">Your name</label>
+              <input id="f-name" name="name" type="text" autocomplete="name"
+                     placeholder="Ada Okonkwo" aria-describedby="e-name" required>
+              <p class="err" id="e-name" hidden></p>
+            </div>
+
+            <div class="field">
+              <label for="f-email">Email</label>
+              <input id="f-email" name="email" type="email" autocomplete="email"
+                     inputmode="email" placeholder="ada@studio.com"
+                     aria-describedby="e-email" required>
+              <p class="err" id="e-email" hidden></p>
+            </div>
+          </div>
+
+          <div class="field">
+            <label for="f-org">Studio or company <span class="opt">optional</span></label>
+            <input id="f-org" name="org" type="text" autocomplete="organization"
+                   placeholder="Where you&rsquo;re writing from">
+          </div>
+
+          <fieldset class="field">
+            <legend>What kind of work is it?</legend>
+            <div class="chiprow">
+              <label class="chip"><input type="radio" name="discipline" value="Look development"><span>Look development</span></label>
+              <label class="chip"><input type="radio" name="discipline" value="Real-time delivery"><span>Real-time delivery</span></label>
+              <label class="chip"><input type="radio" name="discipline" value="Interactive systems"><span>Interactive systems</span></label>
+              <label class="chip"><input type="radio" name="discipline" value="Still working it out"><span>Still working it out</span></label>
+            </div>
+          </fieldset>
+
+          <fieldset class="field">
+            <legend>Budget you&rsquo;re working against</legend>
+            <div class="chiprow">
+              <label class="chip"><input type="radio" name="budget" value="Under $25k"><span>Under $25k</span></label>
+              <label class="chip"><input type="radio" name="budget" value="$25k&ndash;$75k"><span>$25k &ndash; $75k</span></label>
+              <label class="chip"><input type="radio" name="budget" value="$75k&ndash;$200k"><span>$75k &ndash; $200k</span></label>
+              <label class="chip"><input type="radio" name="budget" value="$200k and up"><span>$200k and up</span></label>
+              <label class="chip"><input type="radio" name="budget" value="Not set yet"><span>Not set yet</span></label>
+            </div>
+          </fieldset>
+
+          <div class="field">
+            <label for="f-start">When you need the first frame</label>
+            <div class="selectwrap">
+              <select id="f-start" name="start">
+                <option value="">Pick a window</option>
+                <option>This month</option>
+                <option>In one to three months</option>
+                <option>In three to six months</option>
+                <option>Later than that</option>
+                <option>The date is fixed</option>
+              </select>
+              <i class="caret" aria-hidden="true"></i>
+            </div>
+          </div>
+
+          <div class="field">
+            <label for="f-brief">The project</label>
+            <p class="help" id="h-brief">
+              What it is, who sees it, and what has to be true for it to work.
+              Links to references are welcome.
+            </p>
+            <textarea id="f-brief" name="brief" rows="6" maxlength="1200"
+                      placeholder="We open a permanent installation next spring and the centrepiece is a wall that has to react to the room&hellip;"
+                      aria-describedby="h-brief e-brief" required></textarea>
+            <div class="undertext">
+              <p class="err" id="e-brief" hidden></p>
+              <span class="counter micro" id="counter" aria-hidden="true">0 <span class="dim">/ 1200</span></span>
+            </div>
+          </div>
+
+          <!-- Bot trap. Pushed off-screen rather than display:none, so a
+               scripted fill still reaches it; out of the tab order either way. -->
+          <div class="trap" aria-hidden="true">
+            <label for="f-trap">Leave this empty</label>
+            <input id="f-trap" name="website" type="text" tabindex="-1" autocomplete="off">
+          </div>
+
+          <div class="actions">
+            <button class="send" id="sendBtn" type="submit">
+              <span class="send-label">Send the brief</span>
+              <span class="send-rail" aria-hidden="true"></span>
+            </button>
+            <p class="micro note">
+              <span class="dim">Or write to us directly</span>
+              <a href="mailto:promotion.frames@gmail.com">promotion.frames@gmail.com</a>
+            </p>
+          </div>
+        </form>
+
+        <!-- Replaces the form once the brief is away. -->
+        <div class="sent" id="sent" hidden tabindex="-1">
+          <span class="tick a"></span><span class="tick b"></span>
+          <span class="tick c"></span><span class="tick d"></span>
+          <p class="micro"><span class="dim">Reference</span> <span id="ref">&mdash;</span></p>
+          <h2>The brief is in.</h2>
+          <p class="sent-body">
+            A producer reads it and answers from a real address within two
+            working days, with either a first question or a call in the diary.
+            Nothing else lands in your inbox.
+          </p>
+          <button class="ghost" id="againBtn" type="button">Send another brief</button>
+        </div>
+      </div>
+
+      <!-- ── read-back ─────────────────────────────────────────── -->
+      <aside class="sheetcol rise d2" aria-label="Intake sheet">
+
+        <div class="sheet" id="sheet">
+          <span class="tick a"></span><span class="tick b"></span>
+          <span class="tick c"></span><span class="tick d"></span>
+
+          <div class="sheet-head">
+            <span class="micro">Intake Sheet</span>
+            <span class="micro dim" id="sheetState">Draft</span>
+          </div>
+
+          <dl class="spec">
+            <div class="spec-row"><dt class="micro">Client</dt><dd data-slot="name">&mdash;</dd></div>
+            <div class="spec-row"><dt class="micro">Reply to</dt><dd data-slot="email">&mdash;</dd></div>
+            <div class="spec-row"><dt class="micro">From</dt><dd data-slot="org">&mdash;</dd></div>
+            <div class="spec-row"><dt class="micro">Work</dt><dd data-slot="discipline">&mdash;</dd></div>
+            <div class="spec-row"><dt class="micro">Budget</dt><dd data-slot="budget">&mdash;</dd></div>
+            <div class="spec-row"><dt class="micro">First frame</dt><dd data-slot="start">&mdash;</dd></div>
+          </dl>
+
+          <p class="synopsis" id="synopsis">The sheet fills in as you write.</p>
+
+          <div class="sheet-foot">
+            <div class="rail"><i id="rail"></i></div>
+            <span class="micro count-n"><span id="pct">000</span><span class="dim">%</span></span>
+          </div>
+        </div>
+
+        <div class="direct">
+          <div class="direct-row">
+            <span class="micro">Studio</span>
+            <a href="mailto:promotion.frames@gmail.com">promotion.frames@gmail.com</a>
+          </div>
+          <div class="direct-row">
+            <span class="micro">New work</span>
+            <a href="tel:+919355004442">+91 93550 04442</a>
+          </div>
+          <div class="direct-row">
+            <span class="micro">Where</span>
+            <span>New&nbsp;Delhi, India<br/><span class="faint">28.61&deg;&nbsp;N 77.21&deg;&nbsp;E</span></span>
+          </div>
+          <div class="direct-row">
+            <span class="micro">Local time</span>
+            <span class="clock" id="clock">--:--:--</span>
+          </div>
+        </div>
+      </aside>
+
+    </div>
+  </section>
+
+  <footer id="foot" class="wrap">
+    <span class="micro">Pro&#8202;&mdash;&#8202;Motion <span class="dim">&mdash;</span> Real&nbsp;&mdash;&nbsp;Time Rendering</span>
+    <a class="micro" href="about.html">Watch the studio film &rarr;</a>
+  </footer>
+
+</main>
+
+<script src="contact.js"></script>
+</body>
+</html>

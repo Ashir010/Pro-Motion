@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0,viewport-fit=cover"/>
+<title>About &mdash; Pro-Motion</title>
+<meta name="description" content="Pro-Motion is a real-time rendering studio. Watch the studio film."/>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=JetBrains+Mono:wght@300;400;500;700;800&display=swap" rel="stylesheet">
+<link href="loading.html" rel="preload" as="document">
+<link rel="stylesheet" href="about.css">
+</head>
+<body>
+
+<!-- ══ persistent ground ═════════════════════════════════════════
+     The loader's WebGL scene does not follow the visitor here; this
+     is the still equivalent, fixed behind a page that scrolls.
+     ══════════════════════════════════════════════════ -->
+<div id="ground" aria-hidden="true"></div>
+
+<nav id="nav" aria-label="Primary">
+  <a class="brand" href="loading.html"><i class="pip"></i>Pro&#8202;&mdash;&#8202;Motion</a>
+  <div class="links">
+    <a href="loading.html#work">Work</a>
+    <a href="about.html" aria-current="page">About</a>
+    <a href="contact.html">Contact</a>
+  </div>
+</nav>
+
+<main>
+
+  <!-- ══ masthead ════════════════════════════════════════════════ -->
+  <header id="masthead" class="wrap">
+    <h1 class="rise">Rendered in<br/>real&#8202;&mdash;&#8202;time. <em>Every frame.</em></h1>
+    <p class="lede rise d1">
+      Pro&#8202;&mdash;&#8202;Motion is a small rendering studio built around one conviction:
+      that the fastest way to the right image is to be able to move inside it.
+      No overnight queues, no waiting on a farm to tell you the light was wrong.
+      Everything below was rendered live.
+    </p>
+  </header>
+
+  <!-- ══ film ════════════════════════════════════════════════════
+       The video is the section, not an illustration inside it. The
+       frame carries the loader's corner ticks and hairline rail so
+       the player reads as studio equipment rather than a web embed.
+       ════════════════════════════════════════════════════════════ -->
+  <section id="film" class="wrap" aria-labelledby="film-h">
+    <div class="section-head rise">
+      <span class="micro" id="film-h">01 <span class="dim">/</span> The Studio Film</span>
+      <span class="micro">Real&nbsp;&mdash;&nbsp;Time Rendering</span>
+    </div>
+
+    <div class="frame rise d1">
+      <span class="tick a"></span><span class="tick b"></span>
+      <span class="tick c"></span><span class="tick d"></span>
+
+      <div class="screen is-idle" id="screen">
+        <!-- preload="metadata" is deliberate: the source is a large
+             master, so nothing but the header is fetched until the
+             visitor (or the viewport observer) actually starts it. -->
+        <video id="film-video"
+               playsinline
+               muted
+               loop
+               preload="metadata"
+               aria-label="Pro-Motion studio film">
+          <source src="ProMotion%20About.mp4" type="video/mp4">
+          Your browser does not support the video element.
+          <a href="ProMotion%20About.mp4">Download the film instead.</a>
+        </video>
+
+        <div class="plate" id="plate" aria-hidden="true"><span class="spin"></span></div>
+        <div class="veil" aria-hidden="true"></div>
+
+        <button class="play" id="playBtn" type="button" aria-label="Play film">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 3.5 20 12 6 20.5z"/></svg>
+        </button>
+
+        <div class="bar">
+          <span class="tc" id="tcNow">00:00</span>
+          <button class="scrub" id="scrub" type="button"
+                  aria-label="Seek" role="slider"
+                  aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" aria-valuetext="0 percent">
+            <span class="track">
+              <span class="buf"  id="buf"></span>
+              <span class="fill" id="fill"></span>
+              <span class="head" id="head"></span>
+            </span>
+          </button>
+          <span class="tc total" id="tcEnd">--:--</span>
+          <button class="ctl" id="soundBtn" type="button" aria-pressed="true">Sound&nbsp;off</button>
+          <button class="ctl" id="fsBtn" type="button" aria-label="Full screen">Full</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="filmnote rise d2">
+      <span class="micro"><span class="dim">Capture</span> 1920&times;1080 &mdash; 30&nbsp;fps &mdash; 01:02</span>
+      <span class="micro"><span class="dim">Press</span> Space to play <span class="dim">/</span> M for sound</span>
+    </div>
+  </section>
+
+  <!-- ══ studio ══════════════════════════════════════════════════ -->
+  <section id="studio" class="wrap" aria-labelledby="studio-h">
+    <div class="section-head rise">
+      <span class="micro" id="studio-h">02 <span class="dim">/</span> How we work</span>
+      <span class="micro">Three&nbsp;disciplines</span>
+    </div>
+
+    <div class="cols">
+      <article class="col rise d1">
+        <span class="idx">001</span>
+        <h2>Look development</h2>
+        <p>
+          Materials, light and camera resolved in the engine, at final quality,
+          while the decision is still cheap to change. What you approve is what
+          renders.
+        </p>
+      </article>
+      <article class="col rise d2">
+        <span class="idx">002</span>
+        <h2>Real-time delivery</h2>
+        <p>
+          Sequences that run at frame rate on the hardware they ship to &mdash;
+          from a browser canvas to a stage LED wall &mdash; without a second
+          offline pipeline shadowing the first.
+        </p>
+      </article>
+      <article class="col rise d3">
+        <span class="idx">003</span>
+        <h2>Interactive systems</h2>
+        <p>
+          When the image has to answer to something &mdash; a visitor, a data
+          feed, a live performance &mdash; we build the system underneath it,
+          not just the render on top.
+        </p>
+      </article>
+    </div>
+  </section>
+
+  <footer id="foot" class="wrap">
+    <span class="micro">Pro&#8202;&mdash;&#8202;Motion <span class="dim">&mdash;</span> 28.61&deg;&nbsp;N 77.21&deg;&nbsp;E</span>
+    <a class="micro" href="contact.html">Start a project &rarr;</a>
+  </footer>
+
+</main>
+
+<script src="about.js"></script>
+</body>
+</html>

@@ -173,8 +173,10 @@ body.is-revealed #nav a{
 }
 #stage .mark{
   font-size: clamp(2rem, 7vw, 5rem);
-  font-weight:400;
-  letter-spacing:-.03em;
+  font-weight:700;
+  /* Tighter than the lighter cut ran: at 700 the sidebearings grow, and
+     without this the word reads loose rather than solid. */
+  letter-spacing:-.038em;
   color: var(--stage-ink);
   text-shadow: var(--halo);
   transition-delay:.25s;
@@ -190,12 +192,21 @@ body.is-revealed #nav a{
 /* Deliberately heavier and a step larger than the HUD's --micro. At 9px
    and weight 500 almost no pixel of this face reaches full coverage, so
    the background and the halo both bleed through and grey the strokes;
-   the extra weight and size give the ink something solid to sit on. */
+   the extra weight and size give the ink something solid to sit on.
+   800 is the top of JetBrains Mono's range. */
 #stage .mark-sub{
   font-family: var(--mono);
-  font-size: clamp(11px, .92vw, 13px);
-  font-weight:700;
-  letter-spacing:.34em;
+  font-size: clamp(13px, 1.16vw, 16px);
+  font-weight:800;
+  /* 800 is the end of the family's weight axis, so the extra heft has to
+     come from the outline: a stroke in the fill colour fattens every stem
+     without a heavier cut existing. Kept under ~0.6px because the stroke
+     centres on the contour and half of it grows inward, which starts
+     closing the counters in E, R and G. */
+  -webkit-text-stroke: .55px currentColor;
+  /* Loosened tracking would fight the added weight — pulled back so the
+     line reads as one dense bar rather than spaced-out letters. */
+  letter-spacing:.30em;
   text-transform:uppercase;
   color:#000;
   /* Repeating a shadow compounds its alpha, so these stack into an
