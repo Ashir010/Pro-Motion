@@ -97,6 +97,67 @@
   }
 
   /* ═══════════════════════════════════════════════════════════════
+     MAIL LINKS
+
+     The markup keeps a real mailto: — it is the correct semantics, it
+     is what right-click "copy email address" reads, and it still works
+     with JavaScript off. The click itself is redirected to Gmail's
+     compose window, because a mailto: only goes anywhere on a machine
+     with a desktop mail client configured, and most no longer have one.
+
+     Delegated from the document rather than bound per link, so any
+     address added to this page later is picked up with no extra wiring.
+     ═══════════════════════════════════════════════════════════════ */
+  document.addEventListener('click', function (e) {
+    if (!e.target || !e.target.closest) { return; }
+
+    var link = e.target.closest('a[href^="mailto:"]');
+    if (!link) { return; }
+
+    /* Ctrl/Cmd/middle clicks mean "open this your own way" — leave them
+       to the browser instead of hijacking them into a second tab. */
+    if (e.button !== 0 || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) {
+      return;
+    }
+
+    var raw = link.getAttribute('href').replace(/^mailto:/i, '');
+    var split = raw.split('?');
+
+    var to = decodeURIComponent(split[0] || '').trim();
+    if (!to) { return; }
+
+    var url = 'https://mail.google.com/mail/?view=cm&fs=1&tf=1' +
+              '&to=' + encodeURIComponent(to);
+
+    /* Carry a subject or body through if the address ever grows one,
+       so the two paths stay in step. */
+    if (split[1]) {
+      split[1].split('&').forEach(function (pair) {
+        var eq = pair.indexOf('=');
+        if (eq < 0) { return; }
+        var key = pair.slice(0, eq).toLowerCase();
+        var val = pair.slice(eq + 1);
+        if (key === 'subject' || key === 'su') {
+          url += '&su=' + val;
+        } else if (key === 'body') {
+          url += '&body=' + val;
+        }
+      });
+    }
+
+    e.preventDefault();
+
+    /* Blocked popups return null; that is the one case where taking
+       over the current tab is better than doing nothing at all. */
+    var win = window.open(url, '_blank');
+    if (win) {
+      try { win.opener = null; } catch (err) { /* cross-origin, fine */ }
+    } else {
+      window.location.href = url;
+    }
+  });
+
+  /* ═══════════════════════════════════════════════════════════════
      THE SHEET
      ═══════════════════════════════════════════════════════════════ */
   var form = document.getElementById('briefForm');
