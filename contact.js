@@ -99,38 +99,31 @@
   /* ═══════════════════════════════════════════════════════════════
      MAIL LINKS
 
-     The markup keeps a real mailto: — it is the correct semantics, it
-     is what right-click "copy email address" reads, and it still works
-     with JavaScript off. The click itself is redirected to Gmail's
-     compose window, because a mailto: only goes anywhere on a machine
-     with a desktop mail client configured, and most no longer have one.
+     Every mailto: on the page is rewritten, once at load, into a Gmail
+     compose URL that opens in a new tab.
 
-     Delegated from the document rather than bound per link, so any
-     address added to this page later is picked up with no extra wiring.
+     The obvious implementation — catch the click and call window.open —
+     does not survive contact with a popup blocker. Chrome in particular
+     blocks window.open from a file:// page and fails silently, so the
+     link simply does nothing when the page is opened straight off disk,
+     which is exactly how it gets demonstrated. Rewriting the href means
+     the click is an ordinary link navigation: there is no handler left
+     to block, and nothing to go wrong at click time.
+
+     The original address is parked on data-mailto so it stays
+     recoverable, and remains in the markup as the no-JavaScript state.
      ═══════════════════════════════════════════════════════════════ */
-  document.addEventListener('click', function (e) {
-    if (!e.target || !e.target.closest) { return; }
-
-    var link = e.target.closest('a[href^="mailto:"]');
-    if (!link) { return; }
-
-    /* Ctrl/Cmd/middle clicks mean "open this your own way" — leave them
-       to the browser instead of hijacking them into a second tab. */
-    if (e.button !== 0 || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) {
-      return;
-    }
-
-    var raw = link.getAttribute('href').replace(/^mailto:/i, '');
+  function gmailCompose(href) {
+    var raw = String(href).replace(/^mailto:/i, '');
     var split = raw.split('?');
 
     var to = decodeURIComponent(split[0] || '').trim();
-    if (!to) { return; }
+    if (!to) { return ''; }
 
-    var url = 'https://mail.google.com/mail/?view=cm&fs=1&tf=1' +
+    var url = 'https://mail.google.com/mail/?view=cm&fs=1' +
               '&to=' + encodeURIComponent(to);
 
-    /* Carry a subject or body through if the address ever grows one,
-       so the two paths stay in step. */
+    /* Carry a subject or body through if an address ever grows one. */
     if (split[1]) {
       split[1].split('&').forEach(function (pair) {
         var eq = pair.indexOf('=');
@@ -144,18 +137,21 @@
         }
       });
     }
+    return url;
+  }
 
-    e.preventDefault();
+  var mailLinks = document.querySelectorAll('a[href^="mailto:"]');
+  for (var m = 0; m < mailLinks.length; m++) {
+    var mailLink = mailLinks[m];
+    var mailto   = mailLink.getAttribute('href');
+    var compose  = gmailCompose(mailto);
+    if (!compose) { continue; }
 
-    /* Blocked popups return null; that is the one case where taking
-       over the current tab is better than doing nothing at all. */
-    var win = window.open(url, '_blank');
-    if (win) {
-      try { win.opener = null; } catch (err) { /* cross-origin, fine */ }
-    } else {
-      window.location.href = url;
-    }
-  });
+    mailLink.setAttribute('data-mailto', mailto);
+    mailLink.setAttribute('href', compose);
+    mailLink.setAttribute('target', '_blank');
+    mailLink.setAttribute('rel', 'noopener noreferrer');
+  }
 
   /* ═══════════════════════════════════════════════════════════════
      THE SHEET
